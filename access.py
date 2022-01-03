@@ -8,6 +8,7 @@ Created on Tue Dec 14 00:00:01 2021
 import globus_sdk
 from globus_sdk import GroupsClient, AuthClient, GroupsClient
 import toml
+import os
 
 
 CLIENT_TOML = ".client.toml"
@@ -66,8 +67,8 @@ def create_tokens(client_id):
     client = globus_sdk.NativeAppAuthClient(client_id)
     client.oauth2_start_flow(refresh_tokens=True, requested_scopes=["openid", "profile", "email", "urn:globus:auth:scope:transfer.api.globus.org:all", GroupsClient.scopes.all])
     authorize_url = client.oauth2_get_authorize_url()
-    print(f"Please go to this URL and login: {authorize_url}")
-    auth_code = input("Please enter the Native App Authorization Code you get after login here: ").strip()
+    print(f"Please go to this URL and log in: {authorize_url}")
+    auth_code = input("Please enter the Native App Authorization Code you get after login: ").strip()
     token_response = client.oauth2_exchange_code_for_tokens(auth_code)
     
     globus_auth_data = token_response.by_resource_server["auth.globus.org"]

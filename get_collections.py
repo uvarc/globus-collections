@@ -9,6 +9,7 @@ import argparse
 import globus_sdk
 import pandas as pd
 import access
+import os
 
 
 HOST_ENDPOINTS = 'uva#main-DTN'
@@ -90,12 +91,12 @@ def parse_args():
 
 def main():
     args = parse_args()
-    scope = args.scope
     endpoint_names = args.endpoints.split(",")
-    output_file = args.output
 
-    # set up clients
+    # set up clients and tokens
     client_id = access.get_client_id()
+    if not os.path.exists(access.TOKENS_TOML):
+        access.create_tokens(client_id)
     client = globus_sdk.NativeAppAuthClient(client_id)
     client.oauth2_start_flow()
 
@@ -105,10 +106,10 @@ def main():
     
     print ("Client initialization successful.")
     print (f"Checking these endpoints: {','.join(endpoint_names)}")
-    print (f"Applied filter: {scope}")
+    print (f"Applied filter: {args.scope}")
 
     # get endpoint and ACL info
-    eps,acls = get_endpoint_acls(tc, filter_scope=scope, host_endpoints=endpoint_names)
+    eps,acls = get_endpoint_acls(tc, filter_scope=args.scope, host_endpoints=endpoint_names)
     if len(eps) == 0:
         print ("Endpoint does not exit or no collections found.")
     else:    
@@ -129,8 +130,8 @@ def main():
         acl_id_df = acl_df.merge(id_df, left_on='principal', right_on='id', how='left')    
         acl_id_ep_df = acl_id_df.merge(ep_df, left_on='collection id', right_on='collection id', how='left')
         acl_id_ep_df = acl_id_ep_df[ENDPOINT_KEEP + ACL_KEEP + IDENTITY_KEEP]
-        acl_id_ep_df.to_csv(output_file)
-        print (f"Collection information saved in {output_file}")
+        acl_id_ep_df.to_csv(args.output)
+        print (f"Collection information saved in {args.output}")
 
 
 if __name__ == '__main__':
