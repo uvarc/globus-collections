@@ -1,4 +1,4 @@
-globus-dk
+globus-sdk
 pandas
 toml
 argparse
